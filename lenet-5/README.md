@@ -32,10 +32,15 @@ pip install torch torchvision numpy matplotlib
 
 project/
 │
+
 ├── models/        # Model implementations
+
 ├── experiments/   # Experimental modifications
+
 ├── train.py       # Training script
+
 ├── evaluate.py    # Evaluation script
+
 └── README.md
 
 ---
