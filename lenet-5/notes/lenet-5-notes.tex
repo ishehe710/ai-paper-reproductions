@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{LeNet-5 Paper Reproduction: Notes}
+\author{Ilagaba Shehe}
+\date{February 28, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section*{Section 2: Convolutional Neural Networks for
+Isolated Character Recognition}
+\begin{itemize}
+    \item Convolutional Networks force the extraction of local features by restricting the receptive fields of hidden units to be local.
+    \item Convolutional Networks combine three architectural ideas to ensure some degree of shift, scale, and distortion invariance, local receptive fields, shared weights (or weight replication) and spatial or temporal subsampling.
+    \item Units in a layer are organized in planes within which all the units share the same set of weights. The set of outputs of the units in such a plane is called a feature map. Units in a feature map are all constrained to perform the same operation on different parts of the image. A complete convolutional layer is composed of several feature maps (with different weight vectors), so that multiple features can be extracted at each location.
+    \item A simple way to reduce the precision with which the position of distinctive features are encoded in a feature map is to reduce the spatial resolution of the feature map. This can be achieved with a so called subsampling layers which performs a local averaging and a subsampling, reducing the resolution of the feature map, and reducing the sensitivity of the output to shifts and distortions.
+    \item Fixed size convolutional networks that share weights along a single temporal dimension are known as Time Delay Neural Networks (TDNNs).
+    
+\end{itemize}
+    \subsection*{LeNet-5 Architecture}
+    \begin{itemize}
+        \item The network comprises of 7 layers (not counting the input). They call contain trainable parameters (weights).
+        \item the input is a 32x32 pixel images. Which are normalized
+        \item Receptive Field(s): It is the size of the input area that a particular CNN feature is "looking at".
+        \item Convolutional layers are labeled $C_x$ and sub-sampling layers are labeled $S_x$ and fully-connected layers are labeled $F_x$, where x is the layer index.
+            \begin{itemize}
+                \item Layer $C_1$: has 6 feature maps with size 28x28, where each feature map is connected to a 5x5 neighborhood in the input. $C_1$ contains 156 trainable parameters, and 122,304 connections.
+                \item Layer $S_2$: has 6 feature maps of size 14x14. Each unit connected to a 2x2 neighborhood corresponding to the feature map in $C_1$. Uses a sigmoidal activation function. $S_2$ has 12 trainable parameters and 5,880 connections.
+                \item Layer $C_3$: has 16 feature maps. Each unit in each feature map is connected to several 5x5 neighborhoods at identical locations in a subset of $S_2$'s feature maps. Layer $C_3$ has 1,516 trainable parameters and 151,600 connections.
+                \item Layer $S_4$: has 16 feature maps of size 5x5. Each unit in each feature map is connected to a 2x2 neighborhood in the corresponding feature map in $C_3$ like in $C_1$ and $S_2$. $S_4$ has 32 trainable parameters and 2,000 connections.
+                \item Layer $C_5$: has 120 feature maps where each unit is connected to a 5x5 neighborhood on all 16 f $S_4$'s feature maps. Layer $C_5$ has 48,120 trainable connections.
+                \item Layer $F_6$: contains 84 units and is fully connected to $C_5$, and has 10,164 trainable parameters.
+            \end{itemize}
+        \item Like classical neural networks, units in layers up to $F_6$ compute a dot product between their input vector and their weight vector to which a bias is added. 
+            \[y = w^Tx + b\]
+        Then a that sum ($y$) is then input for a sigmoid function to produce the state for one of units in the next layer. For the CNN is squashing function is a scaled hyperbolic tangent:
+            \[f(a) = Atanh(Sa)\]
+        where A is the amplitude of the function and S determines its slope at the origin. A is chosen to be 1.7159.
+        \item The output layer is composed f Euclidean Radial Basis Function units (RBF), one for each class, with 84 inputs each. The outputs of each RBF unit $y_i$ is computed as follows:
+            \[y_i - \sum_j (x_j - w_{ij})^2 \]
+        essentially each output RBF unit computes the Euclidean distance between its input vector and is parameter vector.
+        \item Loss Function
+            \begin{itemize}
+                \item The LeNet-5 uses the Maximum Likelihood Estimation criterion (MLE).
+                    \[E(W) = \frac{1}{P} \sum_{p=1}^{P} y_{D_p}(Z^P, W)\]
+                Where $y_{D_p}$ is the output of the $D_p$-th RBF unit, which is the oen that corresponds to the correct class of input pattern $Z^p$. However there are three issues with this equation, where it was modified into this loss function equation:
+                    \[E(W) = \frac{1}{P} \sum_{p=1}^{P} y_{D_p}(Z^P, W) + log(e^{-j} + \sum_i e^{-y_i(Z^p, W)})\].
+                \item The log term represents the competitive nature of the classification. It forces the network to not only decrease the error for the correct class ( $_{D_P}$) but also increase the error (distance) for all other incorrect classes.
+                \item Computing the gradient of the loss function with for all the weights of the layers in a convolutional network is done with back-propagation.
+            \end{itemize}
+    \end{itemize}
+
+\end{document}
