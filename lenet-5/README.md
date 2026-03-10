@@ -30,8 +30,7 @@ pip install torch torchvision numpy matplotlib
 
 ## Project Structure
 
-project/
-│
+lenet-5/
 
 ├── models/        # Model implementations
 
@@ -80,6 +79,18 @@ The following experiments will evaluate common modern improvements to the origin
    * Add **Batch Normalization**
 
 These experiments will help analyze how modern techniques influence training stability, convergence speed, and overall performance.
+
+## Results
+
+### Basline Model
+- Architecture: LeNet-5 reproduction
+- Activation: scaled tanh
+- Pooling: average pooling
+- Classifier: RBF with fixed prototypes
+- Loss: MLE
+Test Accuracy: **97.54%**
+
+- Note: This is closest to the actual LeNet-5 model described in the paper
 
 ---
 
