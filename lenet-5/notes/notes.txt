@@ -1,0 +1,7 @@
+1️⃣ Baseline (tanh + AvgPool + RBF + SGD)
+2️⃣ ReLU
+3️⃣ Adam
+4️⃣ MaxPool
+5️⃣ Learnable classifier
+6️⃣ BatchNorm
+7️⃣ Modern combined model

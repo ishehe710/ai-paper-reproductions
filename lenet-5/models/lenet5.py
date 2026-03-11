@@ -24,7 +24,10 @@ expanded_vectors = [torch.tensor(p).repeat(9)[:84] for p in raw_patterns]
 def fit(epochs, lr, model, train_loader, val_loader, opt_func=torch.optim.SGD):
     """Train the model using gradient descent"""
     history = []
-    optimizer = opt_func(model.parameters(), lr)
+    optimizer = opt_func(model.parameters(), lr=lr)
+    # Add a scheduler to help the RBF layer converge
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.5)
+    
     for epoch in range(epochs):
         model.train()
         # Training Phase
@@ -34,14 +37,18 @@ def fit(epochs, lr, model, train_loader, val_loader, opt_func=torch.optim.SGD):
             loss.backward()
             optimizer.step()
         # Validation phase
+        scheduler.step() # Decay the learning rate
         result = evaluate(model, val_loader)
         model.epoch_end(epoch, result)
         history.append(result)
     return history
 
 # define accuracy function
-def accuracy(outputs, labels):
-    preds = torch.argmin(outputs, dim=1)
+def accuracy(outputs, labels, classifier="rbf"):
+    if classifier == "rbf":
+        preds = torch.argmin(outputs, dim=1)
+    else:
+        preds = torch.argmax(outputs, dim=1)
     return (preds == labels).float().mean()
 
 def mle_loss(distances, labels):
@@ -59,25 +66,28 @@ def mle_loss(distances, labels):
     competitive = torch.logsumexp(-distances, dim=1)
 
     # final loss
-    loss = correct - competitive
+    loss = correct + competitive
 
     return loss.mean()
 
 class LeNet5(nn.Module):
     """Feedforward neural network with 1 hidden layer"""
-    def __init__(self):
+    def __init__(self, activation="tanh", pooling="avg", classifier="rbf", batchnorm=False):
         super().__init__()
+        
+        # toggling detials
+        self.activation_type = activation
+        self.activation = None
+        self.pooling_type = pooling
+        self.classifier_type = classifier
+        self.use_batchnorm = batchnorm
+        
+        # layers
         # convolution layer C1
         self.C1 = nn.Conv2d(in_channels=1, out_channels=6, kernel_size=(5,5))
         
-        # subsampling layer S2
-        self.S2 = nn.AvgPool2d(kernel_size=(2,2), stride=2)
-        
         # convolution layer C3
-        self.C3 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=(5,5))
-
-        # subsampling layer S4
-        self.S4 = nn.AvgPool2d(kernel_size=(2,2), stride=2)    
+        self.C3 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=(5,5))  
         
         # convolution layer C5
         self.C5 = nn.Conv2d(in_channels=16, out_channels=120, kernel_size=(5,5))
@@ -85,24 +95,74 @@ class LeNet5(nn.Module):
         # full connected layer F6
         self.F6 = nn.Linear(in_features=120, out_features=84) 
         
-        # output layer (RBF)
-        self.rbf = RadialBF(torch.stack(expanded_vectors))
+        # batchnorm 
+        self.bn1 = None
+        self.bn3 = None
+        if batchnorm:
+            self.bn1 = nn.BatchNorm2d(6)
+            self.bn3 = nn.BatchNorm2d(16)
+        else:
+            self.bn1 = None
+            self.bn3 = None
+        
+        if activation == "relu":
+            self.activation = nn.ReLU()
+        
+        # layers S2 & S4: either max or avg pooling
+        if pooling == "max":
+            self.S2 = nn.MaxPool2d(kernel_size=(2,2), stride=2)
+            self.S4 = nn.MaxPool2d(kernel_size=(2,2), stride=2)
+        else:
+            self.S2 = nn.AvgPool2d(kernel_size=(2,2), stride=2)
+            self.S4 = nn.AvgPool2d(kernel_size=(2,2), stride=2)
+            
+        if classifier == "rbf":
+            self.classifier = RadialBF(torch.stack(expanded_vectors))
+        else:
+            self.classifier = nn.Linear(84,10)
+        
+        
+    def activate(self, x):
+        if self.activation_type == "relu":
+            return self.activation(x)
+        else:
+            # A = 1.7159
+            # S = 2/3
+            A = 1.7159
+            S = 2/3 
+            return A*torch.tanh(S*x)
         
     # image is padded            
     def forward(self, images):
-        # activation function
-        # A = 1.7159
-        # S = 2/3
-        A = 1.7159
-        S = 2/3 
         
-        c1_out = A*torch.tanh(S*self.C1(images))
+        # convolution layer 1
+        c1_out = self.C1(images)
+        
+        if self.bn1 is not None:
+            c1_out = self.bn1(c1_out)
+        
+        c1_out = self.activate(c1_out)
+        
+        # pooling layer 2
         s2_out = self.S2(c1_out)
-        c3_out = A*torch.tanh(S*self.C3(s2_out))
+        
+        # convolution layer 3
+        c3_out = self.C3(s2_out)
+        
+        if self.bn3 is not None:
+            c3_out = self.bn3(c3_out)
+        
+        c3_out = self.activate(c3_out)
+        
+        # pooling layer 4
         s4_out = self.S4(c3_out)
-        c5_out = A*torch.tanh(S*self.C5(s4_out))
-        f6_out = A*torch.tanh(S*self.F6(c5_out.view(images.size(0), 120)))
-        out = self.rbf(f6_out)
+        
+        # convolution layer 5
+        c5_out = self.activate(self.C5(s4_out))
+        
+        f6_out = self.activate(self.F6(c5_out.view(images.size(0), 120)))
+        
+        out = self.classifier(f6_out)
         
         return out
     
@@ -110,14 +170,22 @@ class LeNet5(nn.Module):
         """Returns the loss for a batch of training data"""
         images, labels = batch
         out = self(images)                  # Generate predictions
-        loss = mle_loss(out, labels)
+        loss = None
+        if self.classifier_type == "rbf":
+            loss = mle_loss(out, labels)
+        else:
+            loss = F.cross_entropy(out, labels)
         return loss
 
     def validation_step(self, batch):
         images, labels = batch
         out = self(images)                  # Generate predictions
-        loss = mle_loss(out, labels)
-        acc = accuracy(out, labels)         # Calculate accuracy
+        loss = None
+        if self.classifier_type == "rbf":
+            loss = mle_loss(out, labels)
+        else:
+            loss = F.cross_entropy(out, labels)
+        acc = accuracy(out, labels, self.classifier_type)
         return {'val_loss': loss, 'val_acc': acc}
 
     def validation_epoch_end(self, outputs):
@@ -147,4 +215,3 @@ def evaluate(model, val_loader):
     with torch.no_grad():
         outputs = [model.validation_step(batch) for batch in val_loader]
     return model.validation_epoch_end(outputs)
-
