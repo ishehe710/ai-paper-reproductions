@@ -1,3 +1,57 @@
+"""
+LeNet-5 Implementation in PyTorch
+
+This module implements a reproduction of the classic LeNet-5 convolutional
+neural network architecture proposed by Yann LeCun et al. in the paper:
+
+"Gradient-Based Learning Applied to Document Recognition" (1998)
+
+The implementation follows the original architecture while also allowing
+modern variations to be tested through configurable parameters.
+
+Architecture Overview
+---------------------
+Input: 1 × 28 × 28 grayscale image (MNIST)
+
+    C1: Convolution (1 → 6, kernel=5×5) + activation
+    S2: Subsampling (AvgPool 2×2)
+    C3: Convolution (6 → 16, kernel=5×5) + activation
+    S4: Subsampling (AvgPool 2×2)
+    C5: Convolution (16 → 120, kernel=5×5)
+    F6: Fully Connected (120 → 84)
+    Output Layer: RBF classifier or Linear + Softmax
+
+The original LeNet-5 used:
+    - Scaled tanh activations
+    - Subsampling/Average pooling
+    - Radial Basis Function (RBF) classifier
+
+Experimental Variants
+---------------------
+This implementation allows experimentation with modern alternatives:
+
+    - Activation functions (Scaled Tanh, ReLU)
+    - Pooling layers (AvgPool, MaxPool)
+    - Optimizers (SGD, Adam)
+    - Output classifiers (RBF, Linear + Softmax)
+    - Batch Normalization
+
+These experiments are used to compare historical CNN design choices
+with commonly used modern deep learning components.
+
+Dataset
+-------
+MNIST handwritten digit dataset.
+
+Framework
+---------
+PyTorch
+
+Author
+------
+Ilagaba Shehe
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

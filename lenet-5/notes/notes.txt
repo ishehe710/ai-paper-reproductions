@@ -4,4 +4,5 @@
 4️⃣ MaxPool
 5️⃣ Learnable classifier
 6️⃣ BatchNorm
-7️⃣ Modern combined model
+7️⃣ ReLU + Learnable Classifier
+8️⃣ Modern combined model
