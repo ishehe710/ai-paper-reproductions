@@ -4,18 +4,32 @@ from models.blocks import BasicBlock
 
 class ResNet(nn.Module):
     
-    def __init__(self, block, layers, num_classes=1000):
+    def __init__(self, block, layers, num_classes=1000, stem_type='imagenet', use_skip=True):
         super().__init__()
         
         self.in_channels = 64
+        self.stem_type = stem_type
         
-        # stem
+        # stem (default to imagenet style)
+        kernel_size = 7
+        stride = 2
+        padding = 3
+        
+        # choose the indicated stem
+        if stem_type == 'cifar10':
+            kernel_size = 3
+            stride = 1
+            padding = 1
+            
+        # disabling skip connections flag
+        self.use_skip = use_skip
+            
         self.conv1 = nn.Conv2d(
             in_channels=3,
             out_channels=64,
-            kernel_size=7,
-            stride=2,
-            padding=3,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
             bias=False
         )
         self.bn1 = nn.BatchNorm2d(64)
@@ -38,7 +52,7 @@ class ResNet(nn.Module):
 
         # first block may change spatial size / channels
         layers.append(
-            block(self.in_channels, out_channels, stride=stride)
+            block(self.in_channels, out_channels, stride=stride, use_skip=self.use_skip)
         )
 
         # after first block, channel size is now out_channels
@@ -57,7 +71,8 @@ class ResNet(nn.Module):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-        out = self.maxpool(out)
+        if not self.stem_type == 'cifar10':
+            out = self.maxpool(out)
         
         # layers
         out = self.layer1(out)
@@ -151,8 +166,8 @@ def evaluate(model, dataloader, criterion, device):
     Versions of the ResNet Model with varying amount of layers.
 '''
 
-def resnet18(num_classes=1000):
-        '''
-        Facotry method for the ResNet-18, model with .
-        '''
-        return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes)
+def resnet18(num_classes=1000, stem_type='imagenet', use_skip=True):
+    '''
+    Facotry method for the ResNet-18, model with .
+    '''
+    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes=num_classes, stem_type=stem_type, use_skip=use_skip)

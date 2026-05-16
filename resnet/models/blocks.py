@@ -2,7 +2,7 @@ from torch import nn
 
 class BasicBlock(nn.Module):
     
-    def __init__(self, in_channels, out_channels, stride=1):
+    def __init__(self, in_channels, out_channels, stride=1, use_skip=True):
         super().__init__()
         # convolutional layers
         self.conv1 = nn.Conv2d(
@@ -21,6 +21,8 @@ class BasicBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
         
+        # use skip
+        self.use_skip = use_skip
         # skip path
         if stride != 1 or in_channels != out_channels:
             # projection shortcut
@@ -41,7 +43,8 @@ class BasicBlock(nn.Module):
         out = self.bn2(out)
         
         # addition and final activation
-        out = out + identity
+        if self.use_skip:
+            out = out + identity
         out = self.relu(out)
         
         return out
