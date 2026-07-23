@@ -8,4 +8,5 @@ MAX_LENGTH = 100
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-4
 EPOCHS = 10
-D_MODEL = 128
+D_MODEL = 128 # for embedding layer
+MAX_LENGTH_ENCODING = 512 # for positional encoding
