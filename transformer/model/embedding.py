@@ -27,7 +27,5 @@ class TransformerEmbedding(nn.Module):
 
 vocab_size = len(map_token_to_id(tokenize(english_df)).keys())
 embedding_layer = TransformerEmbedding(vocab_size, D_MODEL)
-print(src_batch.shape)
 output = embedding_layer(src_batch)
-print(output.shape)
-print(output.dtype)
+

@@ -24,7 +24,7 @@ data_iter = iter(dataloader)
 src_batch, trg_batch = next(data_iter)
 
 # 3. Inspect your data shapes
-print("Source batch shape:", src_batch.shape)
-print("Target batch shape:", trg_batch.shape)
+#print("Source batch shape:", src_batch.shape)
+#print("Target batch shape:", trg_batch.shape)
 
 

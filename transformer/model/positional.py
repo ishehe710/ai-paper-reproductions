@@ -32,10 +32,5 @@ class PositionalEncoding(nn.Module):
 pe_layer = PositionalEncoding(max_length=MAX_LENGTH_ENCODING, d_model=D_MODEL)
 
 
-print(pe_layer.pe[0])
-
-print(pe_layer.pe.shape)
 
 output = pe_layer(output)
-print(output.shape)
-print(output)
