@@ -10,10 +10,6 @@ class Attention(nn.Module):
         
         super().__init__()
         
-        # query, key, and value layer
-        self.query_layer = nn.Linear(in_features=d_model, out_features=d_k)
-        self.key_layer = nn.Linear(in_features=d_model, out_features=d_k)
-        self.value_layer = nn.Linear(in_features=d_model, out_features=d_k)
         
         # key dimensional for scaling
         self.d_k = d_k
@@ -22,12 +18,12 @@ class Attention(nn.Module):
         self.softmax_layer = nn.Softmax(dim=2)
         
     
-    def forward(self, x):
+    def forward(self, query, key, value):
         
         # query, key, and value matrices
-        Q = self.query_layer(x)
-        K = self.key_layer(x)
-        V = self.value_layer(x)
+        Q = query
+        K = key
+        V = value
         
         
         K_t = torch.transpose(K, 1, 2)
@@ -40,6 +36,3 @@ class Attention(nn.Module):
     
     
     
-attention_layer = Attention(d_model=D_MODEL, d_k=D_MODEL)
-
-output = attention_layer(output)
