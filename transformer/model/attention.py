@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
-import numpy as np
+import math 
 from transformer.model.positional import output
 from transformer.model.config import D_MODEL
 
 class Attention(nn.Module):
     
-    def __init__(self, d_model, d_k):
+    def __init__(self, d_k):
         
         super().__init__()
         
@@ -18,7 +18,7 @@ class Attention(nn.Module):
         self.softmax_layer = nn.Softmax(dim=2)
         
     
-    def forward(self, query, key, value):
+    def forward(self, query, key, value, mask=None):
         
         # query, key, and value matrices
         Q = query
@@ -28,7 +28,9 @@ class Attention(nn.Module):
         
         K_t = torch.transpose(K, 1, 2)
         result = Q @ K_t # matrix mult. of query and key matrix
-        result /= np.sqrt(self.d_k)
+        result /= math.sqrt(self.d_k)
+        if mask is not None:
+            result += mask
         attention_weights = self.softmax_layer(result)
         result = attention_weights @ V
         
