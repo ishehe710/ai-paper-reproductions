@@ -3,6 +3,7 @@ from transformer.data.tokenizer import tokenize
 from transformer.data.vocabulary import map_token_to_id, make_ids
 import torch
 from torch.utils.data import Dataset
+from transformer.model.config import FRENCH, ENGLISH
 
 
 class TranslationDataset(Dataset):
@@ -73,13 +74,24 @@ def create_id_seqs(lang_df) -> list[list[int]]:
     
     return lang_id_seqs
     
+def create_dataset(filename: str) -> Dataset:
+    
+    # load dataset
+    df = pd.read_csv(filename)
 
+    # seperate languages
+    english_df = df[ENGLISH]
+    french_df = df[FRENCH]
 
+    english_id_seqs = create_id_seqs(english_df)
+    french_id_seqs = create_id_seqs(french_df)
 
+    dataset = TranslationDataset(english_id_seqs, french_id_seqs)
+    
+    return dataset
 
-
-
-
+def find_vocab_size():
+    pass
 
 
 
