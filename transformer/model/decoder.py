@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from transformer.model.decoder_layer import DecoderLayer
+from transformer.model.config import D_MODEL
 
 class Decoder(nn.Module):
     
@@ -9,7 +10,7 @@ class Decoder(nn.Module):
         super().__init__()
         
         self.decoder_layers = nn.ModuleList(
-            [DecoderLayer for _ in range(num_layers)]
+            [DecoderLayer(d_model=d_model) for _ in range(num_layers)]
         )
         
     

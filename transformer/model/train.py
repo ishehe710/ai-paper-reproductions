@@ -2,11 +2,14 @@
     Runs the entire training process. the model and dataset to train them
 '''
 from transformer.model.evaluate import evaluate
+import torch
 
-def train(model, num_epochs, train_loader, val_loader, loss_func, optimizer, scheduler, device):
+def fit(model, num_epochs, train_loader, val_loader, loss_func, optimizer, scheduler, device):
     
     history = {'training': [], 'validation': []}
     for epoch in range(num_epochs):
+
+        #print("cool 1:", epoch)
 
         model.train()
 
@@ -14,21 +17,40 @@ def train(model, num_epochs, train_loader, val_loader, loss_func, optimizer, sch
         running_loss = 0.0
         total = 0
         for inputs, targets in train_loader:
+            
+            #print("cool 2")
             inputs, targets = inputs.to(device), targets.to(device)
 
             # forward
+            #print("cool 3")
             outputs = model(inputs, targets)
-            loss = loss_func(outputs, targets)
+            outputs_t = torch.transpose(outputs, dim0=1, dim1=2)
+            loss = loss_func(outputs_t, targets)
+            
+            
+            #print(loss)
+            #print(torch.isfinite(loss))
+        
 
             # backward
+            #print("cool 4")
             optimizer.zero_grad()
+            #print("after zero_grad")
+            
+            
+            
             loss.backward()
+            #print("after backward")
+            
             optimizer.step()
+            #print("after step")
             
             # training metrics
+            #print("cool 5")
             running_loss += loss.item() * inputs.size(0)
             total += targets.size(0)
         
+        #print("before eval")
         # Validation and tracking metrics phase
         train_loss = running_loss / total
         val_loss = evaluate(model, val_loader, loss_func, device)

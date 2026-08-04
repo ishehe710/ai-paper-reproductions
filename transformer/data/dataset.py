@@ -57,8 +57,9 @@ def add_padding(lang_tokens: list[list[str]], vector_length: int):
     for tokens in lang_tokens:
         while len(tokens) < vector_length:
             tokens.append('<PAD>')
-            
-def create_id_seqs(lang_df) -> list[list[int]]:
+
+# output: tuple of (data, vocab_size)          
+def create_id_seqs(lang_df):
     
     # tokenize language
     lang_tokens = tokenize(lang_df)
@@ -72,9 +73,9 @@ def create_id_seqs(lang_df) -> list[list[int]]:
     add_padding(lang_tokens, lang_longest)
     lang_id_seqs = make_ids(lang_tokens, lang_mapping)
     
-    return lang_id_seqs
+    return (lang_id_seqs, len(lang_mapping.keys()))
     
-def create_dataset(filename: str) -> Dataset:
+def create_dataset(filename: str):
     
     # load dataset
     df = pd.read_csv(filename)
@@ -83,16 +84,14 @@ def create_dataset(filename: str) -> Dataset:
     english_df = df[ENGLISH]
     french_df = df[FRENCH]
 
-    english_id_seqs = create_id_seqs(english_df)
-    french_id_seqs = create_id_seqs(french_df)
+    english_id_seqs, eng_vocab_size  = create_id_seqs(english_df)
+    french_id_seqs, frc_vocab_size = create_id_seqs(french_df)
 
     dataset = TranslationDataset(english_id_seqs, french_id_seqs)
     
-    return dataset
+    return (dataset, eng_vocab_size, frc_vocab_size)
 
-def find_vocab_size():
-    pass
-
+ 
 
 
 

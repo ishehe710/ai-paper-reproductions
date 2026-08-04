@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import math 
-from transformer.model.positional import output
 from transformer.model.config import D_MODEL
 
 class Attention(nn.Module):

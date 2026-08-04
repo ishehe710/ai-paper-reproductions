@@ -20,7 +20,7 @@ class EncoderLayer(nn.Module):
     
     def forward(self, x):
         
-        attention_output = self.attention_layer(x)
+        attention_output = self.attention_layer(x, x, x)
         
         # residual connection
         output = attention_output + x

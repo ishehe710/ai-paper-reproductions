@@ -43,7 +43,7 @@ class Transformer(nn.Module):
         # decoding half
         embedded_target = self.output_embedding(target)
         summed_target = self.position_encoding(embedded_target)
-        decoder_output = self.decoder(query=summed_target, key=encoder_output, value=encoder_output)
+        decoder_output = self.decoder(x=summed_target, encoder_output=encoder_output)
         output = self.linear_layer(decoder_output)
         
         return output

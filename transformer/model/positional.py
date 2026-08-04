@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 from transformer.model.config import MAX_LENGTH_ENCODING, D_MODEL
-from transformer.model.embedding import output
 
 
 class PositionalEncoding(nn.Module):
@@ -28,9 +27,3 @@ class PositionalEncoding(nn.Module):
     
     
     
-    
-pe_layer = PositionalEncoding(max_length=MAX_LENGTH_ENCODING, d_model=D_MODEL)
-
-
-
-output = pe_layer(output)

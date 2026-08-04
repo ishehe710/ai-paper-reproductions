@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from transformer.model.config import D_MODEL 
 from transformer.model.attention import Attention
-from transformer.model.positional import output
 
 class MultiHeadAttention(nn.Module):
 

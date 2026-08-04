@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 from transformer.model.config import D_MODEL
-from transformer.data.dataloader import english_df, src_batch
 from transformer.data.vocabulary import map_token_to_id
 from transformer.data.tokenizer import tokenize
 
@@ -25,7 +24,4 @@ class TransformerEmbedding(nn.Module):
         return scaled_embed
 
 
-vocab_size = len(map_token_to_id(tokenize(english_df)).keys())
-embedding_layer = TransformerEmbedding(vocab_size, D_MODEL)
-output = embedding_layer(src_batch)
 

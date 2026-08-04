@@ -9,7 +9,7 @@ class Encoder(nn.Module):
         super().__init__()
         
         self.encoder_layers = nn.ModuleList(
-            [EncoderLayer() for _ in range(num_layers)]
+            [EncoderLayer(d_model=d_model) for _ in range(num_layers)]
         )
         
         
