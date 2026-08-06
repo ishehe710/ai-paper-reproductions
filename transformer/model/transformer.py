@@ -8,7 +8,7 @@ from transformer.model.decoder import Decoder
 
 class Transformer(nn.Module):
     
-    def __init__(self, source_vocab_size, target_vocab_size, d_model, num_layers):
+    def __init__(self, source_vocab_size, target_vocab_size, d_model, num_layers, dropout):
         
         super().__init__()
         
@@ -31,13 +31,15 @@ class Transformer(nn.Module):
         self.encoder = Encoder(num_layers=num_layers, d_model=d_model)
         self.decoder = Decoder(num_layers=num_layers, d_model=d_model)
         
-        self.linear_layer = nn.Linear(in_features=d_model, out_features=target_vocab_size)        
+        self.linear_layer = nn.Linear(in_features=d_model, out_features=target_vocab_size)    
+        self.dropout = nn.Dropout(p=dropout)    
 
     def forward(self, source, target):
         
         # encoding half
         embedded_source = self.input_embedding(source)
         summed_source = self.position_encoding(embedded_source)
+        summed_source = self.dropout(summed_source)
         encoder_output = self.encoder(summed_source)
         
         # decoding half
