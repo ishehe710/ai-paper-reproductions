@@ -10,7 +10,7 @@ BATCH_SIZE = 8
 LEARNING_RATE = 1e-4
 EPOCHS = 10
 D_MODEL = 128 
-D_FF = 512 # hidden dimension for feed-forward network
+D_FF = 1024 # hidden dimension for feed-forward network
 MAX_LENGTH_ENCODING = 512 # for positional encoding
 DATASET_FILENAME = "./transformer/data/eng_-french.csv"
 
