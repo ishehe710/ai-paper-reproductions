@@ -1,4 +1,5 @@
 venv
 .ipynb_checkpoints
 __pycache__
-model-weights
+*model-weights
+model-weights/baseline_transformer.pth
